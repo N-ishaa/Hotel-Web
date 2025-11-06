@@ -1,0 +1,42 @@
+/* ✅ Tailwind CSS v4 import */
+@import "tailwindcss";
+
+/* ✅ (Optional) Add custom global styles below */
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom font setup (optional) */
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #f9fafb; /* light gray background */
+  color: #111827; /* near-black text */
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+  color: #064e3b; /* dark green */
+}
+
+/* Buttons default transition */
+button {
+  transition: all 0.3s ease;
+}
+
+/* Scrollbar styling (optional aesthetic) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
