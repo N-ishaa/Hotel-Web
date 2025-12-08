@@ -3,6 +3,8 @@ import Swal from "sweetalert2";
 import QRImage from "../assets/webp/QR.webp";
 import { useAuth } from "../context/AuthContext";
 
+const MAX_GUESTS_PER_ROOM = 5;
+
 const BookingForm = () => {
   const { user, isLoggedIn } = useAuth();
   const [formData, setFormData] = useState({
@@ -16,49 +18,57 @@ const BookingForm = () => {
     special_requests: "",
   });
 
+  // Rooms with title + price
   const rooms = [
-    { title: "Single Suite" },
-    { title: "Double Suite" },
-    { title: "Deluxe Suite" },
-    { title: "Family Suite" },
-    { title: "Executive Suite" },
-    { title: "Poolside Villa" },
-    { title: "Luxury Penthouse" },
-    { title: "Royal Suite" },
+    { title: "Single Suite", price: 1500 },
+    { title: "Double Suite", price: 2500 },
+    { title: "Deluxe Suite", price: 3500 },
+    { title: "Family Suite", price: 4000 },
+    { title: "Executive Suite", price: 5000 },
+    { title: "Poolside Villa", price: 6000 },
+    { title: "Luxury Penthouse", price: 8000 },
+    { title: "Royal Suite", price: 10000 },
   ];
-
-  const roomPrices = {
-    "Single Suite": 1500,
-    "Double Suite": 2500,
-    "Deluxe Suite": 3500,
-    "Family Suite": 4000,
-    "Executive Suite": 5000,
-    "Poolside Villa": 6000,
-    "Luxury Penthouse": 8000,
-    "Royal Suite": 10000,
-  };
 
   const handleChange = (e) => {
     const { id, value } = e.target;
 
-    // Only allow digits in phone input
     if (id === "phone") {
       const digitsOnly = value.replace(/\D/g, "");
-      setFormData({ ...formData, [id]: digitsOnly });
+      setFormData((prev) => ({ ...prev, [id]: digitsOnly }));
+    } else if (id === "guests") {
+      let guestsValue = parseInt(value, 10);
+
+      if (isNaN(guestsValue) || guestsValue < 1) {
+        guestsValue = 1;
+      }
+
+      // Prevent more than 5 guests
+      if (guestsValue > MAX_GUESTS_PER_ROOM) {
+        Swal.fire(
+          "Guest Limit Exceeded",
+          "A maximum of 5 guests can stay in a single room.",
+          "warning"
+        );
+        guestsValue = MAX_GUESTS_PER_ROOM;
+      }
+
+      setFormData((prev) => ({ ...prev, guests: guestsValue }));
     } else {
-      setFormData({ ...formData, [id]: value });
+      setFormData((prev) => ({ ...prev, [id]: value }));
     }
   };
 
-  const totalAmount =
-    formData.room_type && roomPrices[formData.room_type]
-      ? roomPrices[formData.room_type] * formData.guests
-      : 0;
+  const guestsCount = Number(formData.guests) || 0;
+  const roomsRequired = 1; // single room, max 5 guests
+
+  const selectedRoom = rooms.find((room) => room.title === formData.room_type);
+  const pricePerRoom = selectedRoom?.price || 0;
+  const totalAmount = pricePerRoom * roomsRequired;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Phone validation: exactly 10 digits
     if (!/^\d{10}$/.test(formData.phone)) {
       Swal.fire(
         "Invalid Phone Number",
@@ -69,24 +79,16 @@ const BookingForm = () => {
     }
 
     if (!formData.room_type) {
-      Swal.fire(
-        "Select Room Type",
-        "Please select a room before booking.",
-        "warning"
-      );
+      Swal.fire("Select Room Type", "Please select a room.", "warning");
       return;
     }
 
     if (!isLoggedIn) {
-      Swal.fire(
-        "Not Logged In",
-        "Please login or signup before making a booking.",
-        "error"
-      );
+      Swal.fire("Not Logged In", "Please login to book a room.", "error");
       return;
     }
 
-    // 🔥 Dummy QR Payment Flow
+    // Payment selection
     const { value: paymentMode } = await Swal.fire({
       title: "Select Payment Method",
       input: "radio",
@@ -105,24 +107,26 @@ const BookingForm = () => {
 
     if (!paymentMode) return;
 
-if (paymentMode === "qr") {
-  await Swal.fire({
-    title: "Scan QR to Pay",
-    html: `
-      <div style="text-align:center;">
-        <img src="${QRImage}" alt="QR Code" style="width:200px; display:block; margin:0 auto;" />
-        <p class="mt-2" style="margin-top:10px;">Send payment to +91 7011082937</p>
-      </div>
-    `,
-    confirmButtonText: `Paid ₹${totalAmount}`,
-    confirmButtonColor: "#14532d",
-    background: "linear-gradient(to right, #064e3b, #0d9488)",
-    color: "#fff",
-  });
-}
+    if (paymentMode === "qr") {
+      await Swal.fire({
+        title: "Scan QR to Pay",
+        html: `
+          <div style="text-align:center;">
+            <img src="${QRImage}" alt="QR Code" style="width:200px; display:block; margin:0 auto;" />
+            <p style="margin-top:10px;">Send payment to +91 9821630750</p>
+            <p style="margin-top:10px;">Guests: ${guestsCount}</p>
+            <p style="margin-top:5px;">Max 5 guests allowed per room</p>
+            <p style="margin-top:5px;">Amount: ₹${totalAmount}</p>
+          </div>
+        `,
+        confirmButtonText: "Paid",
+        confirmButtonColor: "#14532d",
+        background: "linear-gradient(to right, #064e3b, #0d9488)",
+        color: "#fff",
+      });
+    }
 
     try {
-      // Send booking to backend
       const token = localStorage.getItem("token");
       const response = await fetch("http://localhost:5000/api/bookings", {
         method: "POST",
@@ -133,12 +137,15 @@ if (paymentMode === "qr") {
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          phone: `+91${formData.phone}`, // Add +91 here
+          phone: `+91${formData.phone}`,
           roomType: formData.room_type,
           checkIn: formData.check_in,
           checkOut: formData.check_out,
-          guests: formData.guests,
+          guests: guestsCount,
+          rooms: roomsRequired,
           specialRequests: formData.special_requests,
+          pricePerRoom,
+          totalAmount,
         }),
       });
 
@@ -149,22 +156,19 @@ if (paymentMode === "qr") {
         icon: "success",
         title: "Booking Confirmed!",
         html: `
-          <p>Name: ${data.booking?.name}</p>
-          <p>Email: ${data.booking?.email}</p>
-          <p>Room Type: ${data.booking?.roomType}</p>
-          <p>Guests: ${data.booking?.guests}</p>
-          <p>Check-In: ${data.booking?.checkIn}</p>
-          <p>Check-Out: ${data.booking?.checkOut}</p>
+          <p>Name: ${formData.name}</p>
+          <p>Email: ${formData.email}</p>
+          <p>Room Type: ${formData.room_type}</p>
+          <p>Guests: ${guestsCount}</p>
+          <p>Rooms: ${roomsRequired}</p>
+          <p>Price per Room: ₹${pricePerRoom}</p>
           <p>Total Amount: ₹${totalAmount}</p>
-          <p>Payment Mode: ${paymentMode === "qr" ? "Online QR" : "Pay on Visit"}</p>
-          <p>Phone: +91${formData.phone}</p>
         `,
         confirmButtonColor: "#14532d",
         background: "linear-gradient(to right, #064e3b, #0d9488)",
         color: "#fff",
       });
 
-      // Reset form
       setFormData({
         name: user?.name || "",
         email: user?.email || "",
@@ -190,7 +194,10 @@ if (paymentMode === "qr") {
           Fill all your details to reserve your perfect room at Hotel IP Residency.
         </p>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-5"
+        >
           <input
             id="name"
             value={formData.name}
@@ -199,6 +206,7 @@ if (paymentMode === "qr") {
             className="p-3 rounded text-black border-2 border-yellow-400"
             required
           />
+
           <input
             id="email"
             value={formData.email}
@@ -207,8 +215,11 @@ if (paymentMode === "qr") {
             className="p-3 rounded text-black border-2 border-yellow-400"
             required
           />
+
           <div className="flex">
-            <span className="p-3 rounded-l text-black border-2 border-yellow-400 bg-yellow-100 text-yellow-900">+91</span>
+            <span className="p-3 rounded-l text-black border-2 border-yellow-400 bg-yellow-100 text-yellow-900">
+              +91
+            </span>
             <input
               id="phone"
               value={formData.phone}
@@ -220,45 +231,78 @@ if (paymentMode === "qr") {
             />
           </div>
 
-          <select
-            id="room_type"
-            value={formData.room_type}
-            onChange={handleChange}
-            className="p-3 rounded text-black border-2 border-yellow-400"
-            required
-          >
-            <option value="">Select Room Type</option>
-            {rooms.map((room, idx) => (
-              <option key={idx} value={room.title}>
-                {room.title}
-              </option>
-            ))}
-          </select>
+          {/* Room Type with name + price */}
+          <div className="flex flex-col md:col-span-1 col-span-2">
+            <select
+              id="room_type"
+              value={formData.room_type}
+              onChange={handleChange}
+              className="p-3 rounded text-black border-2 border-yellow-400 bg-white text-sm md:text-base"
+              required
+            >
+              <option value="">Select Room Type</option>
+              {rooms.map((room, idx) => (
+                <option key={idx} value={room.title}>
+                  {room.title} — ₹{room.price.toLocaleString("en-IN")}/night
+                </option>
+              ))}
+            </select>
+            <span className="text-xs text-yellow-200 mt-1">
+              Prices are per night, inclusive of basic amenities.
+            </span>
+          </div>
 
-          <input
-            id="check_in"
-            type="date"
-            value={formData.check_in}
-            onChange={handleChange}
-            className="p-3 rounded text-black border-2 border-yellow-400"
-            required
-          />
-          <input
-            id="check_out"
-            type="date"
-            value={formData.check_out}
-            onChange={handleChange}
-            className="p-3 rounded text-black border-2 border-yellow-400"
-            required
-          />
-          <input
-            id="guests"
-            type="number"
-            value={formData.guests}
-            onChange={handleChange}
-            className="p-3 rounded text-black border-2 border-yellow-400"
-            min="1"
-          />
+          {/* Check-in with label */}
+          <div className="flex flex-col">
+            <label className="text-sm text-yellow-200 mb-1">
+              Select Check-In Date
+            </label>
+            <input
+              id="check_in"
+              type="date"
+              value={formData.check_in}
+              onChange={handleChange}
+              className="p-3 rounded text-black border-2 border-yellow-400"
+              required
+            />
+          </div>
+
+          {/* Check-out with label */}
+          <div className="flex flex-col">
+            <label className="text-sm text-yellow-200 mb-1">
+              Select Check-Out Date
+            </label>
+            <input
+              id="check_out"
+              type="date"
+              value={formData.check_out}
+              onChange={handleChange}
+              className="p-3 rounded text-black border-2 border-yellow-400"
+              required
+            />
+          </div>
+
+          {/* Guests with helper text */}
+          <div className="flex flex-col">
+            <label className="text-sm text-yellow-200 mb-1">
+              Number of Guests
+            </label>
+
+            <input
+              id="guests"
+              type="number"
+              value={formData.guests}
+              onChange={handleChange}
+              className="p-3 rounded text-black border-2 border-yellow-400"
+              min="1"
+              max={MAX_GUESTS_PER_ROOM}
+            />
+
+            <span className="text-xs text-yellow-200 mt-1">
+              A maximum of {MAX_GUESTS_PER_ROOM} guests can stay in a single room.
+            </span>
+          </div>
+
           <textarea
             id="special_requests"
             value={formData.special_requests}
@@ -267,11 +311,9 @@ if (paymentMode === "qr") {
             className="p-3 rounded text-black border-2 border-yellow-400 col-span-2"
           />
 
-          {totalAmount > 0 && (
-            <div className="col-span-2 text-center text-lg font-semibold text-yellow-300">
-              💰 Estimated Total: ₹{totalAmount}
-            </div>
-          )}
+          <div className="col-span-2 text-center text-lg font-semibold text-yellow-300">
+            💰 Estimated Total: ₹{totalAmount || 0}
+          </div>
 
           <button
             type="submit"
