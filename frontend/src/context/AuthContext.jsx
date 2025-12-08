@@ -2,13 +2,17 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext();
 
+// 🔹 Base API URL: from env (Vite) or localhost for development
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+// All auth routes are under /api/auth
+const API_URL = `${API_BASE_URL}/api/auth`;
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
-
-  // ⭐ API Base URL
-  const API_URL = "http://localhost:5000/api/auth";
 
   // 🔥 Load user + token from localStorage when app starts
   useEffect(() => {
@@ -45,7 +49,6 @@ export const AuthProvider = ({ children }) => {
         return { success: false, msg: data.msg || "Login failed" };
       }
 
-      // Save token + user
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
@@ -53,11 +56,14 @@ export const AuthProvider = ({ children }) => {
       setUser(data.user);
 
       setLoading(false);
-      return { success: true }; // caller will redirect to Home
+      return { success: true };
     } catch (error) {
       console.error("Login error:", error);
       setLoading(false);
-      return { success: false, msg: "Something went wrong" };
+      return {
+        success: false,
+        msg: "Unable to reach the server. Please try again shortly.",
+      };
     }
   };
 
@@ -80,11 +86,14 @@ export const AuthProvider = ({ children }) => {
       }
 
       setLoading(false);
-      return { success: true }; // caller will redirect to Login
+      return { success: true };
     } catch (error) {
       console.error("Register error:", error);
       setLoading(false);
-      return { success: false, msg: "Something went wrong" };
+      return {
+        success: false,
+        msg: "Unable to reach the server. Please try again shortly.",
+      };
     }
   };
 

@@ -5,6 +5,10 @@ import { useAuth } from "../context/AuthContext";
 
 const MAX_GUESTS_PER_ROOM = 5;
 
+// 🔹 Base API URL: from Vite env or localhost for local development
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 const BookingForm = () => {
   const { user, isLoggedIn } = useAuth();
   const [formData, setFormData] = useState({
@@ -128,7 +132,7 @@ const BookingForm = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/api/bookings", {
+      const response = await fetch(`${API_BASE_URL}/api/bookings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
