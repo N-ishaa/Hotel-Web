@@ -6,35 +6,31 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ✅ Import images
-import Veg1 from "../assets/webp/VMenu1.webp";
-import Veg2 from "../assets/webp/VMenu2.webp";
+// Import images
+import Veg1 from "../assets/webp/VMenu1.webp"; 
+import Veg2 from "../assets/webp/VMenu2.webp"; 
 import Veg3 from "../assets/webp/VMenu3.webp";
-import Veg4 from "../assets/webp/VMenu4.webp";
-import Veg5 from "../assets/webp/VMenu5.webp";
-import Veg6 from "../assets/webp/VMenu6.webp";
-import Veg7 from "../assets/webp/VMenu7.webp";
-import Veg8 from "../assets/webp/VMenu8.webp";
-
-import NonVeg1 from "../assets/webp/NMenu1.webp";
-import NonVeg2 from "../assets/webp/NMenu2.webp";
-import NonVeg3 from "../assets/webp/NMenu3.webp";
-import NonVeg4 from "../assets/webp/NMenu4.webp";
-import NonVeg5 from "../assets/webp/NMenu5.webp";
-import NonVeg6 from "../assets/webp/NMenu6.webp";
-import NonVeg7 from "../assets/webp/NMenu7.webp";
-import NonVeg8 from "../assets/webp/NMenu8.webp";
-
-import Junk1 from "../assets/webp/JMenu1.webp";
-import Junk2 from "../assets/webp/JMenu2.webp";
-import Junk3 from "../assets/webp/JMenu3.webp";
-import Junk4 from "../assets/webp/JMenu4.webp";
-import Junk5 from "../assets/webp/JMenu5.webp";
-import Junk6 from "../assets/webp/JMenu6.webp";
-import Junk7 from "../assets/webp/JMenu7.webp";
+import Veg4 from "../assets/webp/VMenu4.webp"; 
+import Veg5 from "../assets/webp/VMenu5.webp"; 
+import Veg6 from "../assets/webp/VMenu6.webp"; 
+import Veg7 from "../assets/webp/VMenu7.webp"; 
+import Veg8 from "../assets/webp/VMenu8.webp"; 
+import NonVeg1 from "../assets/webp/NMenu1.webp"; 
+import NonVeg2 from "../assets/webp/NMenu2.webp"; 
+import NonVeg3 from "../assets/webp/NMenu3.webp"; 
+import NonVeg4 from "../assets/webp/NMenu4.webp"; 
+import NonVeg5 from "../assets/webp/NMenu5.webp"; 
+import NonVeg6 from "../assets/webp/NMenu6.webp"; 
+import NonVeg7 from "../assets/webp/NMenu7.webp"; 
+import NonVeg8 from "../assets/webp/NMenu8.webp"; 
+import Junk1 from "../assets/webp/JMenu1.webp"; 
+import Junk2 from "../assets/webp/JMenu2.webp"; 
+import Junk3 from "../assets/webp/JMenu3.webp"; 
+import Junk4 from "../assets/webp/JMenu4.webp"; 
+import Junk5 from "../assets/webp/JMenu5.webp"; 
+import Junk6 from "../assets/webp/JMenu6.webp"; 
+import Junk7 from "../assets/webp/JMenu7.webp"; 
 import Junk8 from "../assets/webp/JMenu8.webp";
-
-// 🔝 Scroll to top component
 const ScrollToTop = () => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -42,7 +38,6 @@ const ScrollToTop = () => {
   return null;
 };
 
-// 🖼 LazyImage component
 const LazyImage = ({ src, alt }) => {
   const [visible, setVisible] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -76,9 +71,7 @@ const LazyImage = ({ src, alt }) => {
           alt={alt}
           onLoad={() => setLoaded(true)}
           className={`w-full h-full object-cover transition-all duration-700 ease-out ${
-            loaded
-              ? "opacity-100 scale-100 blur-0"
-              : "opacity-60 scale-105 blur-sm"
+            loaded ? "opacity-100 scale-100 blur-0" : "opacity-60 scale-105 blur-sm"
           }`}
         />
       )}
@@ -98,8 +91,9 @@ const RestaurantMenuPage = () => {
     }, 300);
   };
 
-  // 🍛 Menu Data
-  const vegMenu = [
+  // Combine all menu items
+  const allMenu = [
+    // Veg
     { name: "Buttered Cottage", img: Veg1 },
     { name: "Spiced Mixed Vegetable Rice", img: Veg2 },
     { name: "Green Peas and Cottage", img: Veg3 },
@@ -108,9 +102,7 @@ const RestaurantMenuPage = () => {
     { name: "Stir-Fried Rice with Vegetables", img: Veg6 },
     { name: "Chickpeas Curry", img: Veg7 },
     { name: "Red Kidney Bean Curry", img: Veg8 },
-  ];
-
-  const nonVegMenu = [
+    // Non-Veg
     { name: "Butter Chicken", img: NonVeg1 },
     { name: "Chicken Biryani", img: NonVeg2 },
     { name: "Fish Curry", img: NonVeg3 },
@@ -119,9 +111,7 @@ const RestaurantMenuPage = () => {
     { name: "Egg Curry", img: NonVeg6 },
     { name: "Tandoori Chicken", img: NonVeg7 },
     { name: "Prawn Masala", img: NonVeg8 },
-  ];
-
-  const junkMenu = [
+    // Junk
     { name: "Cheese Burger", img: Junk1 },
     { name: "French Fries", img: Junk2 },
     { name: "Veg Pizza", img: Junk3 },
@@ -132,7 +122,7 @@ const RestaurantMenuPage = () => {
     { name: "Spring Rolls", img: Junk8 },
   ];
 
-  // ✅ GSAP scroll animation using batch
+  // GSAP animation
   useEffect(() => {
     if (!pageRef.current) return;
 
@@ -141,13 +131,7 @@ const RestaurantMenuPage = () => {
         gsap.fromTo(
           batch,
           { opacity: 0, y: 50 },
-          {
-            opacity: 1,
-            y: 0,
-            stagger: 0.15,
-            duration: 0.8,
-            ease: "power3.out",
-          }
+          { opacity: 1, y: 0, stagger: 0.15, duration: 0.8, ease: "power3.out" }
         ),
       onLeaveBack: (batch) =>
         gsap.to(batch, { opacity: 0, y: 50, duration: 0.5, ease: "power2.inOut" }),
@@ -159,16 +143,20 @@ const RestaurantMenuPage = () => {
     return () => ScrollTrigger.getAll().forEach((t) => t.kill());
   }, []);
 
-  const renderSection = (title, items) => (
-    <section className="menu-section mb-16">
-      <h2
-        className="text-3xl font-bold text-center mb-6"
-        style={{ color: "#de7a0f" }}
-      >
-        {title}
-      </h2>
+  return (
+    <div
+      ref={pageRef}
+      className="bg-green-900 min-h-screen text-white py-16 px-8 mt-20 text-center"
+    >
+      <ScrollToTop />
+
+      <h1 className="text-4xl font-bold mb-4" style={{ color: "#dc9800" }}>
+        Chef’s Best Picks — Our Signature Dishes
+      </h1>
+      <div className="w-24 h-1 bg-yellow-600 mx-auto mb-10"></div>
+
       <div className="grid md:grid-cols-4 gap-6">
-        {items.map((item, i) => (
+        {allMenu.map((item, i) => (
           <div
             key={i}
             className="menu-card bg-white rounded-xl shadow-md overflow-hidden transform transition duration-300 hover:scale-105"
@@ -180,26 +168,7 @@ const RestaurantMenuPage = () => {
           </div>
         ))}
       </div>
-    </section>
-  );
 
-  return (
-    <div
-      ref={pageRef}
-      className="bg-green-900 min-h-screen text-white py-16 px-8 mt-20 text-center"
-    >
-      <ScrollToTop />
-
-      <h1 className="text-4xl font-bold mb-4" style={{ color: "#dc9800" }}>
-        Restaurant Menu
-      </h1>
-      <div className="w-24 h-1 bg-yellow-600 mx-auto mb-10"></div>
-
-      {renderSection("Veg Dishes", vegMenu)}
-      {renderSection("Non-Veg Dishes", nonVegMenu)}
-      {renderSection("All Junk", junkMenu)}
-
-      {/* 🔙 Back Button */}
       <div className="text-center mt-10">
         <button
           onClick={handleBackToMenu}

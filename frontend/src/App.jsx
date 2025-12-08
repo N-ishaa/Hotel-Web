@@ -1,15 +1,9 @@
 import React, { useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import Header from "./components/Header";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
 
-// 🧩 Components
+// Components
 import Hero from "./components/Hero";
 import About from "./components/About";
 import Rooms from "./components/Rooms";
@@ -20,18 +14,18 @@ import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import Gallery from "./components/Gallery";
 
-// 🧾 Pages
+// Pages
 import AuthPage from "./components/AuthPage";
 import BookingForm from "./components/BookingForm";
 import RestaurantMenuPage from "./components/RestaurantMenuPage";
 import BarMenuPage from "./components/BarMenuPage";
 
-// 🆕 Pages
+// New Pages
 import AmenitiesPage from "./pages/AmenitiesPage";
 import AboutMore from "./pages/AboutMore";
-import Stays from "./pages/Stays"; // ✅ Newly added page for all rooms
+import Stays from "./pages/Stays";
 
-// ✅ ScrollToTop Component (Global Fix)
+// ScrollToTop Component
 const ScrollToTop = () => {
   const { pathname } = useLocation();
 
@@ -46,7 +40,7 @@ const App = () => {
   return (
     <AuthProvider>
       <Router>
-        <ScrollToTop /> {/* ✅ Automatically scrolls to top on route change */}
+        <ScrollToTop />
         <MainApp />
       </Router>
     </AuthProvider>
@@ -55,15 +49,10 @@ const App = () => {
 
 const MainApp = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
 
-  // ✅ Global Book Now logic (used across app)
+  // Global Book Now logic — just go to booking page
   const handleBookNow = () => {
-    if (!user) {
-      navigate("/auth"); // Redirect to login if not logged in
-    } else {
-      navigate("/booking"); // ✅ Navigate to correct booking route
-    }
+    navigate("/booking");
   };
 
   return (
@@ -71,7 +60,7 @@ const MainApp = () => {
       <Header onBookNow={handleBookNow} />
 
       <Routes>
-        {/* 🏠 Home */}
+        {/* Home */}
         <Route
           path="/"
           element={
@@ -87,22 +76,22 @@ const MainApp = () => {
           }
         />
 
-        {/* 🔐 Auth, Booking & Gallery */}
+        {/* Auth, Booking & Gallery */}
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/booking" element={<BookingForm />} />
         <Route path="/gallery" element={<Gallery />} />
 
-        {/* 🍽️ Restaurant & 🍸 Bar */}
+        {/* Restaurant & Bar */}
         <Route path="/restaurant-menu" element={<RestaurantMenuPage />} />
         <Route path="/bar-menu" element={<BarMenuPage />} />
 
-        {/* 🏨 Amenities */}
+        {/* Amenities */}
         <Route path="/amenities" element={<AmenitiesPage />} />
 
-        {/* 🆕 About More */}
+        {/* About More */}
         <Route path="/about-more" element={<AboutMore />} />
 
-        {/* 🏠 All Rooms (Stays Page) */}
+        {/* All Rooms */}
         <Route path="/stays" element={<Stays />} />
       </Routes>
 

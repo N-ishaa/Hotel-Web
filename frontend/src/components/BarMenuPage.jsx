@@ -47,14 +47,6 @@ const BarMenuPage = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     const ctx = gsap.context(() => {
-      ScrollTrigger.batch(".section-title", {
-        onEnter: (batch) =>
-          gsap.fromTo(batch, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.1 }),
-        onEnterBack: (batch) =>
-          gsap.fromTo(batch, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.1 }),
-        start: "top 85%",
-      });
-
       ScrollTrigger.batch(".menu-card", {
         onEnter: (batch) =>
           gsap.fromTo(batch, { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.8, stagger: 0.15 }),
@@ -67,9 +59,11 @@ const BarMenuPage = () => {
     return () => ctx.revert();
   }, []);
 
+  // Import all drinks
   const Cold = import.meta.glob("../assets/webp/CMenu*.webp", { eager: true });
   const Beer = import.meta.glob("../assets/webp/BEMenu*.webp", { eager: true });
   const Daru = import.meta.glob("../assets/webp/AMenu*.webp", { eager: true });
+  
 
   const coldDrinks = Object.values(Cold).map((v, i) => ({
     name: [
@@ -113,15 +107,20 @@ const BarMenuPage = () => {
     img: v.default,
   }));
 
+  // Combine all drinks
+  const allDrinks = [...coldDrinks, ...beerMenu, ...daruMenu];
+
   const handleBackClick = () => navigate("/#menu");
 
-  const renderSection = (title, items) => (
-    <section key={title} className="mb-12">
-      <h2 className="section-title text-3xl font-bold text-center mb-6" style={{ color: "#de7a0f" }}>
-        {title}
-      </h2>
+  return (
+    <div ref={pageRef} className="bg-green-900 min-h-screen text-white py-16 px-8 mt-20 text-center">
+      <h1 className="text-4xl font-bold mb-4" style={{ color: "#dc9800" }}>
+        Cheers! Our Signature Drinks Collection
+      </h1>
+      <div className="w-24 h-1 bg-yellow-600 mx-auto mb-10"></div>
+
       <div className="grid md:grid-cols-4 gap-6">
-        {items.map((item, i) => (
+        {allDrinks.map((item, i) => (
           <div
             key={i}
             className="menu-card bg-white rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition duration-300"
@@ -133,19 +132,6 @@ const BarMenuPage = () => {
           </div>
         ))}
       </div>
-    </section>
-  );
-
-  return (
-    <div ref={pageRef} className="bg-green-900 min-h-screen text-white py-16 px-8 mt-20 text-center">
-      <h1 className="section-title text-4xl font-bold mb-4" style={{ color: "#dc9800" }}>
-        Drinks
-      </h1>
-      <div className="w-24 h-1 bg-yellow-600 mx-auto mb-10"></div>
-
-      {renderSection("Cold & Normal Drinks", coldDrinks)}
-      {renderSection("Beer Selection", beerMenu)}
-      {renderSection("Liquor Collection", daruMenu)}
 
       <div className="text-center mt-10">
         <button

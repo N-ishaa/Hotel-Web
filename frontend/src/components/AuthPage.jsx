@@ -8,11 +8,11 @@ import { gsap } from "gsap";
 const AuthPage = () => {
   const [isSignup, setIsSignup] = useState(true);
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const { login, register } = useAuth(); 
   const formRef = useRef(null);
+  const navigate = useNavigate();
 
-  // ✅ Animate form on mount
+  // Animation
   useEffect(() => {
     if (formRef.current) {
       gsap.fromTo(
@@ -23,15 +23,14 @@ const AuthPage = () => {
     }
   }, []);
 
-  // ✅ SweetAlert reusable function
   const showPopup = async (title, text, icon = "info") => {
     await Swal.fire({
       title,
       text,
       icon,
-      background: "linear-gradient(to right, #064e3b, #10b981)", // greens
+      background: "linear-gradient(to right, #064e3b, #10b981)",
       color: "white",
-      confirmButtonColor: "#facc15", // yellow accent
+      confirmButtonColor: "#facc15",
       confirmButtonText: "OK",
       customClass: {
         popup: "rounded-3xl shadow-lg",
@@ -47,42 +46,32 @@ const AuthPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    let users = JSON.parse(localStorage.getItem("users")) || [];
 
     if (isSignup) {
-      const existingUser = users.find((u) => u.email === formData.email);
-      if (existingUser) {
-        await showPopup(
-          "Account Exists",
-          "This email is already registered. Please login instead.",
-          "warning"
-        );
-        setIsSignup(false);
-        setFormData({ email: formData.email, password: "" });
+      // SIGNUP
+      const res = await register(formData.name, formData.email, formData.password);
+      if (!res.success) {
+        await showPopup("Signup Failed", res.msg, "error");
         return;
       }
 
-      users.push(formData);
-      localStorage.setItem("users", JSON.stringify(users));
-      await showPopup("Signup Successful!", "Please login now to continue.", "success");
+      await showPopup("Signup Successful!", "You can now login.", "success");
+      // Redirect to login page
       setIsSignup(false);
-      setFormData({ email: formData.email, password: "" });
+      setFormData({ name: "", email: formData.email, password: "" });
+      navigate("/auth");
+
     } else {
-      const user = users.find((u) => u.email === formData.email);
-      if (!user) {
-        await showPopup("No Account Found", "No user found with this email. Please sign up.", "error");
-        setIsSignup(true);
+      // LOGIN
+      const res = await login(formData.email, formData.password);
+      if (!res.success) {
+        await showPopup("Login Failed", res.msg, "error");
         return;
       }
 
-      if (user.password !== formData.password) {
-        await showPopup("Incorrect Password", "The password you entered is wrong.", "error");
-        return;
-      }
-
-      await showPopup("Login Successful!", "Redirecting to booking page...", "success");
-      login(user);
-      navigate("/booking");
+      await showPopup("Login Successful!", "You are now logged in.", "success");
+      // Redirect to home page
+      navigate("/");
     }
   };
 

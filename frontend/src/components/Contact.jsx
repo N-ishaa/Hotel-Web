@@ -2,33 +2,89 @@ import React, { useEffect, useState, useRef } from "react";
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Swal from "sweetalert2";
+import { useAuth } from "../context/AuthContext";
 
 if (typeof window !== "undefined" && gsap) {
   gsap.registerPlugin(ScrollTrigger);
 }
 
 const Contact = () => {
+  const { user, token, isLoggedIn } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     message: "",
   });
-  const [showMessage, setShowMessage] = useState(false);
   const sectionRef = useRef(null);
+
+  // ✅ Pre-fill name & email only when user is logged in and page is not refreshed
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: user.name || "",
+        email: user.email || "",
+      }));
+    }
+  }, [isLoggedIn, user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormData({ name: "", email: "", message: "" });
-    setShowMessage(true);
-    setTimeout(() => setShowMessage(false), 4000);
+
+    if (!isLoggedIn) {
+      await Swal.fire({
+        icon: "warning",
+        title: "Login Required",
+        text: "You must be logged in to send a message.",
+        confirmButtonColor: "#14532d",
+      });
+      return; // stop execution
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.msg || "Failed to send message");
+
+      Swal.fire({
+        icon: "success",
+        title: "Message Sent!",
+        text: "Thank you for reaching out! We'll get back to you soon.",
+        confirmButtonColor: "#14532d",
+        background: "linear-gradient(to right, #fef08a, #fde68a)",
+      });
+
+      // ✅ Reset the entire form after submit
+      setFormData({
+        name: "",
+        email: "",
+        message: "",
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.message,
+        confirmButtonColor: "#dc2626",
+      });
+    }
   };
 
-  // ✅ GSAP scroll animations (Replay every scroll)
+  // ✅ GSAP scroll animations
   useEffect(() => {
     const ctx = gsap.context(() => {
       const elements = gsap.utils.toArray(".contact-animate");
@@ -46,7 +102,7 @@ const Contact = () => {
             scrollTrigger: {
               trigger: el,
               start: "top 85%",
-              toggleActions: "restart none restart none", // 🔁 Replay on scroll up & down
+              toggleActions: "restart none restart none",
               invalidateOnRefresh: true,
             },
           }
@@ -63,11 +119,9 @@ const Contact = () => {
       ref={sectionRef}
       className="py-20 bg-white text-gray-800 relative overflow-hidden"
     >
-      {/* ✨ Decorative background */}
       <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/white-wall.png')]"></div>
 
       <div className="max-w-6xl mx-auto px-6 relative z-10">
-        {/* 🌟 Title */}
         <div className="contact-animate">
           <h2 className="text-4xl font-bold text-center text-green-900 mb-4 tracking-wide">
             Get in Touch
@@ -81,7 +135,6 @@ const Contact = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-12 items-start">
-          {/* 🏨 Contact Info */}
           <div className="space-y-6 contact-animate">
             <div className="flex items-start space-x-4 bg-gray-50 p-5 rounded-lg shadow-sm hover:shadow-md transition">
               <FaMapMarkerAlt className="text-yellow-600 text-2xl mt-1" />
@@ -108,7 +161,6 @@ const Contact = () => {
             </div>
           </div>
 
-          {/* 📝 Contact Form */}
           <form
             onSubmit={handleSubmit}
             className="contact-animate bg-white rounded-2xl shadow-xl p-8 space-y-5 border border-gray-100"
@@ -151,28 +203,9 @@ const Contact = () => {
             >
               Send Message ✉️
             </button>
-
-            {showMessage && (
-              <p className="mt-4 text-green-900 bg-yellow-100 border-l-4 border-yellow-600 p-4 rounded-lg font-medium animate-fadeIn text-center">
-                ✨ Thank you for reaching out! We’ll get back to you soon. 💌
-              </p>
-            )}
           </form>
         </div>
       </div>
-
-      {/* ✨ Fade-in animation for thank-you message */}
-      <style>
-        {`
-          @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          .animate-fadeIn {
-            animation: fadeIn 0.6s ease-in-out;
-          }
-        `}
-      </style>
     </section>
   );
 };

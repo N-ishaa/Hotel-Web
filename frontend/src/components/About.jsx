@@ -81,7 +81,7 @@ const About = () => {
 </h2>
 
 <p className="text-gray-700 leading-relaxed mt-12 mb-6">
-  <span className="font-semibold text-yellow-700">Hotel Utsav Residency</span>{" "}
+  <span className="font-semibold text-yellow-700">Hotel IP Residency</span>{" "}
   stands as a beacon of luxury and comfort in the heart of the city. With years of
   hospitality excellence, we take pride in delivering unforgettable experiences to
   our guests. Every corner reflects our commitment to comfort, from our elegant

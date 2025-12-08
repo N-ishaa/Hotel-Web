@@ -51,8 +51,8 @@ const Footer = () => {
             Contact Us
           </h4>
           <p className="text-sm text-gray-200">📍 123 Residency Road, Delhi</p>
-          <p className="text-sm text-gray-200">📞 +91 7011082937</p>
-          <p className="text-sm text-gray-200">📧 ukainth6@ipresidency.com</p>
+          <p className="text-sm text-gray-200">📞 +91 9821630750</p>
+          <p className="text-sm text-gray-200">📧 nisha@ipresidency.com</p>
         </div>
       </div>
 
